@@ -110,7 +110,7 @@ async def on_order(message: Message):
         )
 
     body = "\n\n".join(lines)
-    summary = f"Итого: {sum_cny:g} ¥ → <b>{rub(sum_total)} ₽</b> (курс {RATE} ₽, комиссия ×{COMMISSION})"
+    summary = f"Итого: {sum_cny:g} ¥ → <b>{rub(sum_total)} ₽</b> (курс {RATE} ₽)"
 
     await message.answer(
         f"✅ Заказ принят!\n\n{body}\n\n{summary}\n\n"
