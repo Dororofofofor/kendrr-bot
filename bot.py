@@ -8,7 +8,14 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup, WebAppInfo
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    Message,
+    ReplyKeyboardMarkup,
+    WebAppInfo,
+)
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiohttp import web
 
@@ -16,6 +23,14 @@ from aiohttp import web
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "")  # ссылка на мини-приложение (HTTPS)
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0") or 0)  # ваш Telegram ID: сюда приходят заказы
+
+CHANNEL_URL = "https://t.me/KendrrStoree"
+DELIVERY_TEXT = (
+    "🚚 <b>Доставка</b>\n\n"
+    "Доставка идёт до г. Новосибирск 15-25 дней, цена 1100 ₽/кг.\n\n"
+    "Как товар приезжает ко мне, я отправлю его вам любым удобным для вас "
+    "способом (Яндекс/СДЭК/Авито и т.п.)."
+)
 
 RATE = 15          # курс: 1 ¥ = 15 ₽
 COMMISSION = 1.3   # комиссия (множитель)
@@ -35,7 +50,10 @@ dp = Dispatcher()
 def open_shop_keyboard() -> ReplyKeyboardMarkup:
     # заказ из мини-приложения доходит до бота только если оно открыто кнопкой клавиатуры
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="🛍 Оформить заказ", web_app=WebAppInfo(url=WEBAPP_URL))]],
+        keyboard=[
+            [KeyboardButton(text="🛍 Оформить заказ", web_app=WebAppInfo(url=WEBAPP_URL))],
+            [KeyboardButton(text="📢 Каналы"), KeyboardButton(text="🚚 Доставка")],
+        ],
         resize_keyboard=True,
     )
 
@@ -108,6 +126,19 @@ async def on_order(message: Message):
             f"🆕 Новый заказ от {who} (id {u.id})\n\n{body}\n\n{summary}",
             disable_web_page_preview=True,
         )
+
+
+@dp.message(F.text == "📢 Каналы")
+async def channels(message: Message):
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[[InlineKeyboardButton(text="📢 Открыть канал", url=CHANNEL_URL)]]
+    )
+    await message.answer("Наш канал Kendrr Store:", reply_markup=kb)
+
+
+@dp.message(F.text == "🚚 Доставка")
+async def delivery(message: Message):
+    await message.answer(DELIVERY_TEXT)
 
 
 @dp.message()
